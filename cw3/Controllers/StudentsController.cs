@@ -21,6 +21,12 @@ namespace cw3.Controllers
         {
             return Ok(_dbService.GetStudents());
         }
+        
+        [HttpGet("{index}/enrollments")]
+        public IActionResult GetEnrollment(string index)
+        {
+            return Ok(_dbService.GetStudentEnrollments(index));
+        }
 
         [HttpGet("{id}")]
         public IActionResult GetStudent(int id)
