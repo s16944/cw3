@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using cw3.DAL.Parsers;
 using cw3.Models;
@@ -210,6 +211,32 @@ namespace cw3.DAL
             return default(object);
         }
 
+        public Enrollment PromoteStudents(string studiesName, int semester) => ExecuteCommand(command =>
+        {
+            command.CommandText = "PromoteStudents";
+            command.CommandType = CommandType.StoredProcedure;
+
+            command.Parameters.AddWithValue("@Studies", studiesName);
+            command.Parameters.AddWithValue("@Semester", semester);
+
+            try
+            {
+                return GetFirst(command, _enrollmentParser);
+            }
+            catch (SqlException exception)
+            {
+                switch (exception.Number)
+                {
+                    case 50_001:
+                        throw new NoSuchStudiesException();
+                    case 50_002:
+                        throw new NoSuchEnrollmentException();
+                    default:
+                        throw;
+                }
+            }
+        });
+
         private class MsSqlDbTransactionService : IDbService
         {
             private readonly MsSqlDbService _service;
@@ -241,6 +268,9 @@ namespace cw3.DAL
 
             public void EnrollStudent(Student student, Enrollment enrollment) =>
                 _service.EnrollStudent(_sqlCommand, student, enrollment);
+
+            public Enrollment PromoteStudents(string studiesName, int semester) =>
+                throw new NotSupportedException();
         }
     }
 }

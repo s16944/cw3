@@ -13,7 +13,12 @@ namespace cw3.DAL
         Enrollment GetEnrollmentByStudiesIdAndSemester(int studiesId, int semester);
         Enrollment AddEnrollment(Enrollment enrollment);
         void EnrollStudent(Student student, Enrollment enrollment);
+        Enrollment PromoteStudents(string studiesName, int semester);
     }
+    
+    public class NoSuchStudiesException : Exception {}
+    
+    public class NoSuchEnrollmentException : Exception {}
     
     public interface ITransactionalDbService : IDbService
     {

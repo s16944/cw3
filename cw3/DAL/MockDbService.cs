@@ -53,5 +53,10 @@ namespace cw3.DAL
         {
             throw new NotImplementedException();
         }
+
+        public Enrollment PromoteStudents(string studiesName, int semester)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
