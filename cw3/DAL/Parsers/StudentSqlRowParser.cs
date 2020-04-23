@@ -1,3 +1,4 @@
+using System;
 using System.Data.SqlClient;
 using cw3.Models;
 
@@ -11,7 +12,8 @@ namespace cw3.DAL.Parsers
                 IdStudent = currentIndex,
                 IndexNumber = reader["IndexNumber"].ToString(),
                 FirstName = reader["FirstName"].ToString(),
-                LastName = reader["LastName"].ToString()
+                LastName = reader["LastName"].ToString(),
+                BirthDate = DateTime.Parse(reader["BirthDate"].ToString())
             };
     }
 }

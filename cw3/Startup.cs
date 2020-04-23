@@ -1,5 +1,7 @@
 ﻿using cw3.DAL;
 using cw3.DAL.Parsers;
+using cw3.DTOs.Requests;
+using cw3.Mappers;
 using cw3.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -23,9 +25,14 @@ namespace cw3
         {
             services.AddSingleton<SqlRowParser<Student>, StudentSqlRowParser>();
             services.AddSingleton<SqlRowParser<Enrollment>, EnrollmentSqlRowParser>();
-            
-            services.AddSingleton<IDbService, MsSqlDbService>();
+            services.AddSingleton<SqlRowParser<Studies>, StudiesSqlRowParser>();
+
+            services.AddSingleton<IMapper<EnrollStudentRequest, Student>, EnrollStudentToStudentMapper>();
+
+            services.AddSingleton<ITransactionalDbService, MsSqlDbService>();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddMvc()
+                .AddJsonOptions(options => { options.SerializerSettings.DateFormatString = "dd.MM.yyyy"; });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
