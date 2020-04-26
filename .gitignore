@@ -434,3 +434,4 @@ fabric.properties
 
 # End of https://www.gitignore.io/api/rider,csharp,dotnetcore
 .idea
+cw3/logs.txt
