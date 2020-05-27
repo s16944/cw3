@@ -6,18 +6,18 @@ namespace cw3.DAL
 {
     public class MockDbService : IDbService
     {
-        private static IEnumerable<Student> _students;
-        private static IEnumerable<Enrollment> _enrollments;
+        private static readonly IEnumerable<Student> Students;
+        private static readonly IEnumerable<Enrollment> Enrollments;
 
         static MockDbService()
         {
-            _students = new List<Student>
+            Students = new List<Student>
             {
                 new Student {IdStudent = 1, FirstName = "Jan", LastName = "Kowalski"},
                 new Student {IdStudent = 2, FirstName = "Anna", LastName = "Malewski"},
                 new Student {IdStudent = 3, FirstName = "Andrzej", LastName = "Andrzejewicz"}
             };
-            _enrollments = new List<Enrollment>
+            Enrollments = new List<Enrollment>
             {
                 new Enrollment {Semester = 1, Studies = new Studies {Name = "Studies1"}},
                 new Enrollment {Semester = 2, Studies = new Studies {Name = "Studies2"}},
@@ -30,10 +30,34 @@ namespace cw3.DAL
             throw new NotImplementedException();
         }
 
-        public IEnumerable<Student> GetStudents() => _students;
+        public IEnumerable<Student> GetStudents() => Students;
 
-        public IEnumerable<Enrollment> GetStudentEnrollments(string indexNumber) => _enrollments;
-        
+        public IEnumerable<Enrollment> GetStudentEnrollments(string indexNumber) => Enrollments;
+        public IEnumerable<Role> GetStudentRoles(Student student)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void AddStudentRefreshToken(Student student, string refreshToken, DateTime validity)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsRefreshTokensPresent(string refreshToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Student GetStudentByRefreshToken(string refreshToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void ReplaceRefreshToken(string oldToken, string newToken, DateTime validity)
+        {
+            throw new NotImplementedException();
+        }
+
         public Studies GetStudiesByName(string name)
         {
             throw new NotImplementedException();
