@@ -65,7 +65,7 @@ namespace cw3.DAL
         private Student GetStudentByIndexNumber(SqlCommand command, string indexNumber)
         {
             const string sqlQuery =
-                "SELECT IndexNumber, FirstName, LastName, BirthDate, Password " +
+                "SELECT IndexNumber, FirstName, LastName, BirthDate, Password, Salt " +
                 "FROM Student " +
                 "WHERE IndexNumber = @indexNumber";
 

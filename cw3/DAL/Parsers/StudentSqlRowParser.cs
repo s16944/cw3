@@ -16,10 +16,11 @@ namespace cw3.DAL.Parsers
                 FirstName = reader["FirstName"].ToString(),
                 LastName = reader["LastName"].ToString(),
                 BirthDate = DateTime.Parse(reader["BirthDate"].ToString()),
-                Password = HasPasswordColumn(reader) ? reader["Password"].ToString() : default
+                Password = HasPasswordColumn(reader, "Password") ? reader["Password"].ToString() : default,
+                Salt = HasPasswordColumn(reader, "Salt") ? reader["Salt"].ToString() : default
             };
 
-        private static bool HasPasswordColumn(SqlDataReader reader) => reader.GetColumnSchema()
-            .Any(e => e.ColumnName == "Password");
+        private static bool HasPasswordColumn(SqlDataReader reader, string columnName) => reader.GetColumnSchema()
+            .Any(e => e.ColumnName == columnName);
     }
 }

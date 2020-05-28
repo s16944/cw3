@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.Linq;
+using cw3.Utils;
 
 namespace cw3.Controllers
 {
@@ -30,7 +31,8 @@ namespace cw3.Controllers
         public IActionResult Login(LoginRequest request) => _dbService.InTransaction(transaction =>
         {
             var student = transaction.GetStudentByIndexNumber(request.Login);
-            if (request.Password != student.Password)
+            var passwordHash = Crypto.CreateHash(request.Password, student.Salt);
+            if (passwordHash != student.Password)
                 return Tuple.Create<bool, IActionResult>(false, Unauthorized("Invalid credentials"));
 
             var token = GetStudentToken(student, transaction);
