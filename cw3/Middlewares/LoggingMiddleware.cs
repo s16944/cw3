@@ -30,6 +30,8 @@ namespace cw3.Middlewares
                     bodyString = await reader.ReadToEndAsync();
                 }
 
+                context.Request.Body.Seek(0, SeekOrigin.Begin);
+
                 logger.Log(method, path, queryString, bodyString);
             }
 

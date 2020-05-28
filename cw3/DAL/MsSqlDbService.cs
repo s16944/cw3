@@ -14,14 +14,17 @@ namespace cw3.DAL
         private readonly SqlRowParser<Student> _studentParser;
         private readonly SqlRowParser<Enrollment> _enrollmentParser;
         private readonly SqlRowParser<Studies> _studiesParser;
+        private readonly SqlRowParser<Role> _roleParser;
 
         public MsSqlDbService(SqlRowParser<Student> studentParser,
             SqlRowParser<Enrollment> enrollmentParser,
-            SqlRowParser<Studies> studiesParser)
+            SqlRowParser<Studies> studiesParser,
+            SqlRowParser<Role> roleParser)
         {
             _studentParser = studentParser;
             _enrollmentParser = enrollmentParser;
             _studiesParser = studiesParser;
+            _roleParser = roleParser;
         }
 
         public T InTransaction<T>(Func<IDbService, Tuple<bool, T>> operations, Func<T> onError) =>
@@ -62,7 +65,7 @@ namespace cw3.DAL
         private Student GetStudentByIndexNumber(SqlCommand command, string indexNumber)
         {
             const string sqlQuery =
-                "SELECT IndexNumber, FirstName, LastName, BirthDate " +
+                "SELECT IndexNumber, FirstName, LastName, BirthDate, Password, Salt " +
                 "FROM Student " +
                 "WHERE IndexNumber = @indexNumber";
 
@@ -120,7 +123,7 @@ namespace cw3.DAL
         private IEnumerable<Enrollment> GetStudentEnrollments(SqlCommand command, string indexNumber)
         {
             const string sqlQuery =
-                "SELECT Semester, Name " +
+                "SELECT Student.IdEnrollment, Semester, Name, StartDate, E.IdStudy " +
                 "FROM Student " +
                 "INNER JOIN Enrollment E on Student.IdEnrollment = E.IdEnrollment " +
                 "INNER JOIN Studies S on E.IdStudy = S.IdStudy " +
@@ -131,6 +134,104 @@ namespace cw3.DAL
             command.Parameters.AddWithValue("indexNumber", indexNumber);
 
             return GetAll(command, _enrollmentParser);
+        }
+
+        public IEnumerable<Role> GetStudentRoles(Student student) =>
+            ExecuteCommand(command => GetStudentRoles(command, student));
+
+        private IEnumerable<Role> GetStudentRoles(SqlCommand command, Student student)
+        {
+            const string sqlQuery =
+                "SELECT name " +
+                "From StudentRoles " +
+                "INNER JOIN ROLES R on StudentRoles.roleId = R.id " +
+                "WHERE indexNumber = @indexNumber";
+
+            command.Parameters.Clear();
+            command.CommandText = sqlQuery;
+            command.Parameters.AddWithValue("indexNumber", student.IndexNumber);
+
+            return GetAll(command, _roleParser);
+        }
+
+        public void AddStudentRefreshToken(Student student, string refreshToken, DateTime validity) =>
+            ExecuteCommand(command => AddStudentRefreshToken(command, student, refreshToken, validity));
+
+        private object AddStudentRefreshToken(
+            SqlCommand command,
+            Student student,
+            string refreshToken,
+            DateTime validity)
+        {
+            const string sqlQuery =
+                "INSERT INTO RefreshTokens(id, indexNumber, token, validity) " +
+                "SELECT ISNULL(Max(id) + 1, 1), @indexNumber, @token, @validity " +
+                "FROM RefreshTokens";
+
+            command.Parameters.Clear();
+            command.CommandText = sqlQuery;
+            command.Parameters.AddWithValue("indexNumber", student.IndexNumber);
+            command.Parameters.AddWithValue("token", refreshToken);
+            command.Parameters.AddWithValue("validity", validity);
+
+            command.ExecuteNonQuery();
+
+            return default;
+        }
+
+        public bool IsRefreshTokenPresent(string refreshToken) =>
+            ExecuteCommand(command => IsRefreshTokensPresent(command, refreshToken));
+
+        private bool IsRefreshTokensPresent(SqlCommand command, string refreshToken)
+        {
+            const string sqlQuery =
+                "SELECT 1 " +
+                "FROM RefreshTokens " +
+                "WHERE token = @refreshToken AND validity > GETDATE()";
+
+            command.Parameters.Clear();
+            command.CommandText = sqlQuery;
+            command.Parameters.AddWithValue("refreshToken", refreshToken);
+
+            return command.ExecuteScalar() != null;
+        }
+
+        public Student GetStudentByRefreshToken(string refreshToken) =>
+            ExecuteCommand(command => GetStudentByRefreshToken(command, refreshToken));
+
+        private Student GetStudentByRefreshToken(SqlCommand command, string refreshToken)
+        {
+            const string sqlQuery =
+                "SELECT Student.IndexNumber, FirstName, LastName, IdEnrollment, BirthDate " +
+                "FROM Student " +
+                "INNER JOIN RefreshTokens R ON Student.IndexNumber = R.indexNumber " +
+                "WHERE token = @refreshToken";
+
+            command.Parameters.Clear();
+            command.CommandText = sqlQuery;
+            command.Parameters.AddWithValue("refreshToken", refreshToken);
+
+            return GetFirst(command, _studentParser);
+        }
+
+        public void ReplaceRefreshToken(string oldToken, string newToken, DateTime validity) =>
+            ExecuteCommand(command => ReplaceRefreshToken(command, oldToken, newToken, validity));
+        private object ReplaceRefreshToken(SqlCommand command, string oldToken, string newToken, DateTime validity)
+        {
+            const string sqlQuery =
+                "UPDATE RefreshTokens " +
+                "SET token = @newToken, validity = @validity " +
+                "WHERE token = @oldToken";
+
+            command.Parameters.Clear();
+            command.CommandText = sqlQuery;
+            command.Parameters.AddWithValue("oldToken", oldToken);
+            command.Parameters.AddWithValue("newToken", newToken);
+            command.Parameters.AddWithValue("validity", validity);
+
+            command.ExecuteNonQuery();
+            
+            return default;
         }
 
         public Studies GetStudiesByName(string name) => ExecuteCommand(command => GetStudiesByName(command, name));
@@ -256,6 +357,21 @@ namespace cw3.DAL
 
             public IEnumerable<Enrollment> GetStudentEnrollments(string indexNumber) =>
                 _service.GetStudentEnrollments(_sqlCommand, indexNumber);
+
+            public IEnumerable<Role> GetStudentRoles(Student student) =>
+                _service.GetStudentRoles(_sqlCommand, student);
+
+            public void AddStudentRefreshToken(Student student, string refreshToken, DateTime validity) =>
+                _service.AddStudentRefreshToken(_sqlCommand, student, refreshToken, validity);
+
+            public bool IsRefreshTokenPresent(string refreshToken) =>
+                _service.IsRefreshTokensPresent(_sqlCommand, refreshToken);
+
+            public Student GetStudentByRefreshToken(string refreshToken) =>
+                _service.GetStudentByRefreshToken(_sqlCommand, refreshToken);
+
+            public void ReplaceRefreshToken(string oldToken, string newToken, DateTime validity) =>
+                _service.ReplaceRefreshToken(_sqlCommand, oldToken, newToken, validity);
 
             public Studies GetStudiesByName(string name) =>
                 _service.GetStudiesByName(_sqlCommand, name);

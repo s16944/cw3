@@ -9,6 +9,11 @@ namespace cw3.DAL
         Student GetStudentByIndexNumber(string indexNumber);
         IEnumerable<Student> GetStudents();
         IEnumerable<Enrollment> GetStudentEnrollments(string indexNumber);
+        IEnumerable<Role> GetStudentRoles(Student student);
+        void AddStudentRefreshToken(Student student, string refreshToken, DateTime validity);
+        bool IsRefreshTokenPresent(string refreshToken);
+        Student GetStudentByRefreshToken(string refreshToken);
+        void ReplaceRefreshToken(string oldToken, string newToken, DateTime validity);
         Studies GetStudiesByName(string name);
         Enrollment GetEnrollmentByStudiesIdAndSemester(int studiesId, int semester);
         Enrollment AddEnrollment(Enrollment enrollment);

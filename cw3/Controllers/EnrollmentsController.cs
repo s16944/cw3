@@ -3,6 +3,7 @@ using cw3.DAL;
 using cw3.DTOs.Requests;
 using cw3.Mappers;
 using cw3.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace cw3.Controllers
@@ -22,6 +23,7 @@ namespace cw3.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "employee")]
         public IActionResult EnrollStudent(EnrollStudentRequest request) =>
             _dbService.InTransaction(transactionService =>
             {
