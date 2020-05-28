@@ -43,7 +43,7 @@ namespace cw3.DAL
             throw new NotImplementedException();
         }
 
-        public bool IsRefreshTokensPresent(string refreshToken)
+        public bool IsRefreshTokenPresent(string refreshToken)
         {
             throw new NotImplementedException();
         }

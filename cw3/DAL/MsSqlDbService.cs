@@ -179,7 +179,7 @@ namespace cw3.DAL
             return default;
         }
 
-        public bool IsRefreshTokensPresent(string refreshToken) =>
+        public bool IsRefreshTokenPresent(string refreshToken) =>
             ExecuteCommand(command => IsRefreshTokensPresent(command, refreshToken));
 
         private bool IsRefreshTokensPresent(SqlCommand command, string refreshToken)
@@ -187,7 +187,7 @@ namespace cw3.DAL
             const string sqlQuery =
                 "SELECT 1 " +
                 "FROM RefreshTokens " +
-                "WHERE token = @refreshToken";
+                "WHERE token = @refreshToken AND validity > GETDATE()";
 
             command.Parameters.Clear();
             command.CommandText = sqlQuery;
@@ -364,7 +364,7 @@ namespace cw3.DAL
             public void AddStudentRefreshToken(Student student, string refreshToken, DateTime validity) =>
                 _service.AddStudentRefreshToken(_sqlCommand, student, refreshToken, validity);
 
-            public bool IsRefreshTokensPresent(string refreshToken) =>
+            public bool IsRefreshTokenPresent(string refreshToken) =>
                 _service.IsRefreshTokensPresent(_sqlCommand, refreshToken);
 
             public Student GetStudentByRefreshToken(string refreshToken) =>

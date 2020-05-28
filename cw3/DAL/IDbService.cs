@@ -11,7 +11,7 @@ namespace cw3.DAL
         IEnumerable<Enrollment> GetStudentEnrollments(string indexNumber);
         IEnumerable<Role> GetStudentRoles(Student student);
         void AddStudentRefreshToken(Student student, string refreshToken, DateTime validity);
-        bool IsRefreshTokensPresent(string refreshToken);
+        bool IsRefreshTokenPresent(string refreshToken);
         Student GetStudentByRefreshToken(string refreshToken);
         void ReplaceRefreshToken(string oldToken, string newToken, DateTime validity);
         Studies GetStudiesByName(string name);

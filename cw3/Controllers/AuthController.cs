@@ -85,7 +85,7 @@ namespace cw3.Controllers
         [HttpGet("refresh/{refreshToken}")]
         public IActionResult RefreshToken(string refreshToken) => _dbService.InTransaction(transaction =>
         {
-            if (!transaction.IsRefreshTokensPresent(refreshToken))
+            if (!transaction.IsRefreshTokenPresent(refreshToken))
                 return Tuple.Create<bool, IActionResult>(false, Unauthorized("Unknown refresh token"));
 
             var student = transaction.GetStudentByRefreshToken(refreshToken);
