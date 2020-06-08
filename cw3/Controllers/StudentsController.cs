@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using cw3.DAL;
 using cw3.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -17,50 +18,66 @@ namespace cw3.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetStudent(string orderBy)
+        public IActionResult GetStudent()
         {
             return Ok(_dbService.GetStudents());
         }
-        
+
         [HttpGet("{index}/enrollments")]
         public IActionResult GetEnrollment(string index)
         {
             return Ok(_dbService.GetStudentEnrollments(index));
         }
 
-        [HttpGet("{id}")]
-        public IActionResult GetStudent(int id)
+        [HttpGet("{index}")]
+        public IActionResult GetStudent(string index)
         {
-            switch (id)
+            try
             {
-                case 1:
-                    return Ok("Kowalski");
-                case 2:
-                    return Ok("Malewski");
-                default:
-                    return NotFound("Nie znaleziono studenta");
+                var student = _dbService.GetStudentByIndexNumber(index);
+                return Ok(student);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
             }
         }
 
-        [HttpPost]
+        [HttpPut]
         public IActionResult CreateStudent(Student student)
         {
             var randomNumber = new Random().Next(1, 20000);
             student.IndexNumber = $"s{randomNumber}";
+            _dbService.AddStudent(student);
             return Ok(student);
         }
-        
-        [HttpPut("{id}")]
-        public IActionResult UpdateStudent(int id)
+
+        [HttpPatch]
+        public IActionResult UpdateStudent(Student student)
         {
-            return Ok("Aktualizacja zakończona");
+            try
+            {
+                _dbService.UpdateStudent(student);
+                return Ok("Updated");
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
         }
-        
-        [HttpDelete("{id}")]
-        public IActionResult DeleteStudent(int id)
+
+        [HttpDelete("{index}")]
+        public IActionResult DeleteStudent(string index)
         {
-            return Ok("Usuwanie ukończone");
+            try
+            {
+                _dbService.RemoveStudent(index);
+                return Ok("Deleted");
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
         }
     }
-    
 }

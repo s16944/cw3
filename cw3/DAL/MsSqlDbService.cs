@@ -102,6 +102,21 @@ namespace cw3.DAL
             return GetAll(command, _studentParser);
         }
 
+        public Student AddStudent(Student student)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Student UpdateStudent(Student student)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Student RemoveStudent(string indexNumber)
+        {
+            throw new NotImplementedException();
+        }
+        
         private IEnumerable<T> GetAll<T>(SqlCommand command, SqlRowParser<T> parser)
         {
             using (var reader = command.ExecuteReader())
@@ -354,6 +369,21 @@ namespace cw3.DAL
 
             public IEnumerable<Student> GetStudents() =>
                 _service.GetStudents(_sqlCommand);
+
+            public Student AddStudent(Student student)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Student UpdateStudent(Student student)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Student RemoveStudent(string indexNumber)
+            {
+                throw new NotImplementedException();
+            }
 
             public IEnumerable<Enrollment> GetStudentEnrollments(string indexNumber) =>
                 _service.GetStudentEnrollments(_sqlCommand, indexNumber);

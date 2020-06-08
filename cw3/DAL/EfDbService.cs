@@ -1,52 +1,70 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using cw3.Models;
 
 namespace cw3.DAL
 {
-    public class MockDbService : IDbService
+    public class EfDbService : IDbService
     {
-        private static readonly IEnumerable<Student> Students;
-        private static readonly IEnumerable<Enrollment> Enrollments;
+        private readonly StudiesDbContext _dbContext;
 
-        static MockDbService()
+        public EfDbService(StudiesDbContext dbContext)
         {
-            Students = new List<Student>
-            {
-                new Student {FirstName = "Jan", LastName = "Kowalski"},
-                new Student {FirstName = "Anna", LastName = "Malewski"},
-                new Student {FirstName = "Andrzej", LastName = "Andrzejewicz"}
-            };
-            Enrollments = new List<Enrollment>
-            {
-                new Enrollment {Semester = 1, IdStudyNavigation = new Studies {Name = "Studies1"}},
-                new Enrollment {Semester = 2, IdStudyNavigation = new Studies {Name = "Studies2"}},
-                new Enrollment {Semester = 3, IdStudyNavigation = new Studies {Name = "Studies3"}}
-            };
+            _dbContext = dbContext;
         }
 
         public Student GetStudentByIndexNumber(string indexNumber)
         {
-            throw new NotImplementedException();
+            var student = _dbContext.Student
+                .Where(s => s.IndexNumber == indexNumber)
+                .SelectStudentOnlyFields()
+                .SingleOrDefault();
+            if(student == default) throw new KeyNotFoundException();
+            return student;
         }
 
-        public IEnumerable<Student> GetStudents() => Students;
+        public IEnumerable<Student> GetStudents() =>
+            _dbContext.Student
+                .SelectStudentOnlyFields()
+                .ToList();
+
         public Student AddStudent(Student student)
         {
-            throw new NotImplementedException();
+            _dbContext.Student.Add(student);
+            _dbContext.SaveChanges();
+            return student;
         }
 
         public Student UpdateStudent(Student student)
         {
-            throw new NotImplementedException();
+            var dbStudent = _dbContext.Student.SingleOrDefault(s => s.IndexNumber == student.IndexNumber);
+            if (dbStudent == default) throw new KeyNotFoundException();
+
+            dbStudent.FirstName = student.FirstName;
+            dbStudent.LastName = student.LastName;
+            dbStudent.BirthDate = student.BirthDate;
+
+            _dbContext.SaveChanges();
+
+            return dbStudent;
         }
 
         public Student RemoveStudent(string indexNumber)
         {
+            var dbStudent = _dbContext.Student.SingleOrDefault(s => s.IndexNumber == indexNumber);
+            if (dbStudent == default) throw new KeyNotFoundException();
+
+            _dbContext.Student.Remove(dbStudent);
+            _dbContext.SaveChanges();
+            return dbStudent;
+        }
+
+        public IEnumerable<Enrollment> GetStudentEnrollments(string indexNumber)
+        {
             throw new NotImplementedException();
         }
 
-        public IEnumerable<Enrollment> GetStudentEnrollments(string indexNumber) => Enrollments;
         public IEnumerable<Role> GetStudentRoles(Student student)
         {
             throw new NotImplementedException();
@@ -96,5 +114,14 @@ namespace cw3.DAL
         {
             throw new NotImplementedException();
         }
+    }
+
+    public static class StudentExtensions
+    {
+        public static IQueryable<Student> SelectStudentOnlyFields(this IQueryable<Student> students) =>
+            students.Select(s => new Student
+            {
+                IndexNumber = s.IndexNumber, FirstName = s.FirstName, LastName = s.LastName, BirthDate = s.BirthDate
+            });
     }
 }

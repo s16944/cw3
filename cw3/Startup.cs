@@ -9,6 +9,7 @@ using cw3.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -52,7 +53,8 @@ namespace cw3
 
             services.AddSingleton<IMapper<EnrollStudentRequest, Student>, EnrollStudentToStudentMapper>();
 
-            services.AddSingleton<IDbService, MsSqlDbService>();
+            services.AddScoped<IDbService, EfDbService>();
+            services.AddDbContext<StudiesDbContext>();
             services.AddSingleton<ITransactionalDbService, MsSqlDbService>();
 
             services.AddSwaggerGen(config =>
