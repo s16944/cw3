@@ -13,15 +13,15 @@ namespace cw3.DAL
         {
             Students = new List<Student>
             {
-                new Student {IdStudent = 1, FirstName = "Jan", LastName = "Kowalski"},
-                new Student {IdStudent = 2, FirstName = "Anna", LastName = "Malewski"},
-                new Student {IdStudent = 3, FirstName = "Andrzej", LastName = "Andrzejewicz"}
+                new Student {FirstName = "Jan", LastName = "Kowalski"},
+                new Student {FirstName = "Anna", LastName = "Malewski"},
+                new Student {FirstName = "Andrzej", LastName = "Andrzejewicz"}
             };
             Enrollments = new List<Enrollment>
             {
-                new Enrollment {Semester = 1, Studies = new Studies {Name = "Studies1"}},
-                new Enrollment {Semester = 2, Studies = new Studies {Name = "Studies2"}},
-                new Enrollment {Semester = 3, Studies = new Studies {Name = "Studies3"}}
+                new Enrollment {Semester = 1, IdStudyNavigation = new Studies {Name = "Studies1"}},
+                new Enrollment {Semester = 2, IdStudyNavigation = new Studies {Name = "Studies2"}},
+                new Enrollment {Semester = 3, IdStudyNavigation = new Studies {Name = "Studies3"}}
             };
         }
 

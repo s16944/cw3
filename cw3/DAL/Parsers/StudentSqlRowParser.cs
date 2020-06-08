@@ -11,7 +11,6 @@ namespace cw3.DAL.Parsers
         public Student Parse(SqlDataReader reader, int currentIndex) =>
             new Student
             {
-                IdStudent = currentIndex,
                 IndexNumber = reader["IndexNumber"].ToString(),
                 FirstName = reader["FirstName"].ToString(),
                 LastName = reader["LastName"].ToString(),

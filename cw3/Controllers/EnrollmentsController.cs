@@ -38,9 +38,9 @@ namespace cw3.Controllers
 
             var enrollment =
                 transactionService
-                    .GetEnrollmentByStudiesIdAndSemester(studies.IdStudies, 1)
+                    .GetEnrollmentByStudiesIdAndSemester(studies.IdStudy, 1)
                 ?? transactionService
-                    .AddEnrollment(new Enrollment {Semester = 1, StartDate = DateTime.Now, Studies = studies});
+                    .AddEnrollment(new Enrollment {Semester = 1, StartDate = DateTime.Now, IdStudyNavigation = studies});
 
             if (transactionService.GetStudentByIndexNumber(request.IndexNumber) != null)
                 return Conflict("Student with such index already exists");

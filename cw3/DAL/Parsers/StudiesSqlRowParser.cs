@@ -1,4 +1,3 @@
-using System;
 using System.Data.SqlClient;
 using cw3.Models;
 
@@ -9,7 +8,7 @@ namespace cw3.DAL.Parsers
         public Studies Parse(SqlDataReader reader, int currentIndex) =>
             new Studies
             {
-                IdStudies = int.Parse(reader["IdStudy"].ToString()),
+                IdStudy = int.Parse(reader["IdStudy"].ToString()),
                 Name = reader["Name"].ToString()
             };
     }

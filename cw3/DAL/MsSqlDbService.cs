@@ -283,7 +283,7 @@ namespace cw3.DAL
             command.Parameters.Clear();
             command.CommandText = insertCommand;
             command.Parameters.AddWithValue("semester", enrollment.Semester);
-            command.Parameters.AddWithValue("idStudy", enrollment.Studies.IdStudies);
+            command.Parameters.AddWithValue("idStudy", enrollment.IdStudyNavigation.IdStudy);
             command.Parameters.AddWithValue("startDate", enrollment.StartDate.Date);
 
             var modified = (int) command.ExecuteScalar();
