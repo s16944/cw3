@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using cw3.Models;
 using System.Data.SqlClient;
+using Castle.Core.Internal;
 using Microsoft.EntityFrameworkCore;
 
 namespace cw3.DAL
@@ -17,7 +18,7 @@ namespace cw3.DAL
         }
 
         public Student GetStudentByIndexNumber(string indexNumber) => _dbContext.Student
-                .SingleOrDefault(s => s.IndexNumber == indexNumber);
+            .SingleOrDefault(s => s.IndexNumber == indexNumber);
 
         public IEnumerable<Student> GetStudents() => _dbContext.Student.ToList();
 
@@ -51,7 +52,12 @@ namespace cw3.DAL
 
         public IEnumerable<Enrollment> GetStudentEnrollments(string indexNumber)
         {
-            throw new NotImplementedException();
+            var student = _dbContext.Student
+                .Where(s => s.IndexNumber == indexNumber)
+                .Include(s => s.IdEnrollmentNavigation)
+                .First();
+
+            return new[] {student.IdEnrollmentNavigation};
         }
 
         public IEnumerable<Role> GetStudentRoles(Student student)
@@ -96,10 +102,10 @@ namespace cw3.DAL
 
             token.Token = newToken;
             token.Validity = validity;
-            
+
             _dbContext.SaveChanges();
         }
-        
+
         public Studies GetStudiesByName(string name) => _dbContext.Studies.SingleOrDefault(s => s.Name == name);
 
         public Enrollment GetEnrollmentByStudiesIdAndSemester(int studiesId, int semester) =>
@@ -122,7 +128,35 @@ namespace cw3.DAL
 
         public Enrollment PromoteStudents(string studiesName, int semester)
         {
-            throw new NotImplementedException();
+            _dbContext.Database.BeginTransaction();
+
+            var studies = _dbContext.Studies
+                .Include(s => s.Enrollment)
+                .SingleOrDefault(s => s.Name == studiesName);
+            if (studies == default) throw new NoSuchStudiesException();
+
+            var currentEnrollment = studies.Enrollment.FirstOrDefault(e => e.Semester == semester);
+            if (currentEnrollment == default) throw new NoSuchEnrollmentException();
+
+            var newEnrollment = studies.Enrollment.FirstOrDefault(e => e.Semester == semester + 1);
+            if (newEnrollment == default)
+            {
+                var id = _dbContext.Enrollment.Max(e => e.IdEnrollment) + 1;
+                newEnrollment = new Enrollment {IdEnrollment = id, Semester = semester + 1, StartDate = DateTime.Now};
+                studies.Enrollment.Add(newEnrollment);
+                _dbContext.SaveChanges();
+            }
+
+            _dbContext.Entry(currentEnrollment).Collection(e => e.Student).Load();
+            foreach (var student in currentEnrollment.Student.ToList())
+            {
+                student.IdEnrollmentNavigation = newEnrollment;
+            }
+
+            _dbContext.SaveChanges();
+            _dbContext.Database.CommitTransaction();
+
+            return newEnrollment;
         }
 
         public T InTransaction<T>(Func<IDbService, Tuple<bool, T>> operations, Func<T> onError)
