@@ -114,6 +114,8 @@ namespace cw3.DAL
 
         public Enrollment AddEnrollment(Enrollment enrollment)
         {
+            var id = _dbContext.Enrollment.Max(e => e.IdEnrollment) + 1;
+            enrollment.IdEnrollment = id;
             _dbContext.Enrollment.Add(enrollment);
             _dbContext.SaveChanges();
             return enrollment;
