@@ -8,6 +8,9 @@ namespace cw3.DAL
     {
         Student GetStudentByIndexNumber(string indexNumber);
         IEnumerable<Student> GetStudents();
+        Student AddStudent(Student student);
+        Student UpdateStudent(Student student);
+        Student RemoveStudent(string indexNumber);
         IEnumerable<Enrollment> GetStudentEnrollments(string indexNumber);
         IEnumerable<Role> GetStudentRoles(Student student);
         void AddStudentRefreshToken(Student student, string refreshToken, DateTime validity);

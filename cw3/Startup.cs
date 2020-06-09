@@ -2,6 +2,7 @@
 using cw3.DAL;
 using cw3.DAL.Parsers;
 using cw3.DTOs.Requests;
+using cw3.DTOs.Response;
 using cw3.Mappers;
 using cw3.Middlewares;
 using cw3.Models;
@@ -52,8 +53,11 @@ namespace cw3
 
             services.AddSingleton<IMapper<EnrollStudentRequest, Student>, EnrollStudentToStudentMapper>();
 
-            services.AddSingleton<IDbService, MsSqlDbService>();
-            services.AddSingleton<ITransactionalDbService, MsSqlDbService>();
+            services.AddScoped<IMapper<Student, StudentResponse>, StudentToResponseMapper>();
+            services.AddScoped<IMapper<Enrollment, EnrollmentResponse>, EnrollmentToResponseMapper>();
+            services.AddScoped<IDbService, EfDbService>();
+            services.AddScoped<ITransactionalDbService, EfDbService>();
+            services.AddDbContext<StudiesDbContext>();
 
             services.AddSwaggerGen(config =>
                 config.SwaggerDoc("v1", new OpenApiInfo {Title = "Students App API", Version = "v1"}));

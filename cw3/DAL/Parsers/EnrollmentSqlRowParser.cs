@@ -19,7 +19,7 @@ namespace cw3.DAL.Parsers
                 IdEnrollment = int.Parse(reader["IdEnrollment"].ToString()),
                 Semester = int.Parse(reader["Semester"].ToString()),
                 StartDate = DateTime.Parse(reader["StartDate"].ToString()),
-                Studies = _studiesSqlRowParser.Parse(reader, 0)
+                IdStudyNavigation = _studiesSqlRowParser.Parse(reader, 0)
             };
     }
 }

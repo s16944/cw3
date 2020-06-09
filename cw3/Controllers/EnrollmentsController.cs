@@ -1,6 +1,7 @@
 using System;
 using cw3.DAL;
 using cw3.DTOs.Requests;
+using cw3.DTOs.Response;
 using cw3.Mappers;
 using cw3.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -14,12 +15,15 @@ namespace cw3.Controllers
     {
         private readonly ITransactionalDbService _dbService;
         private readonly IMapper<EnrollStudentRequest, Student> _enrollStudentToStudentMapper;
+        private readonly IMapper<Enrollment, EnrollmentResponse> _enrollmentToResponseMapper;
 
         public EnrollmentsController(ITransactionalDbService dbService,
-            IMapper<EnrollStudentRequest, Student> enrollStudentToStudentMapper)
+            IMapper<EnrollStudentRequest, Student> enrollStudentToStudentMapper,
+            IMapper<Enrollment, EnrollmentResponse> enrollmentToResponseMapper)
         {
             _dbService = dbService;
             _enrollStudentToStudentMapper = enrollStudentToStudentMapper;
+            _enrollmentToResponseMapper = enrollmentToResponseMapper;
         }
 
         [HttpPost]
@@ -38,18 +42,18 @@ namespace cw3.Controllers
 
             var enrollment =
                 transactionService
-                    .GetEnrollmentByStudiesIdAndSemester(studies.IdStudies, 1)
+                    .GetEnrollmentByStudiesIdAndSemester(studies.IdStudy, 1)
                 ?? transactionService
-                    .AddEnrollment(new Enrollment {Semester = 1, StartDate = DateTime.Now, Studies = studies});
+                    .AddEnrollment(new Enrollment
+                        {Semester = 1, StartDate = DateTime.Now, IdStudyNavigation = studies});
 
             if (transactionService.GetStudentByIndexNumber(request.IndexNumber) != null)
                 return Conflict("Student with such index already exists");
 
             var student = _enrollStudentToStudentMapper.Map(request);
             transactionService.EnrollStudent(student, enrollment);
-
-            enrollment.StartDate = enrollment.StartDate.Date;
-            return Created("api/enrollments", enrollment);
+            
+            return Created("api/enrollments", _enrollmentToResponseMapper.Map(enrollment));
         }
     }
 }

@@ -1,5 +1,6 @@
 using cw3.DAL;
 using cw3.DTOs.Requests;
+using cw3.DTOs.Response;
 using cw3.Mappers;
 using cw3.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -12,13 +13,13 @@ namespace cw3.Controllers
     public class PromotionsController : ControllerBase
     {
         private readonly ITransactionalDbService _dbService;
-        private readonly IMapper<EnrollStudentRequest, Student> _enrollStudentToStudentMapper;
+        private readonly IMapper<Enrollment, EnrollmentResponse> _enrollmentToResponseMapper;
 
         public PromotionsController(ITransactionalDbService dbService,
-            IMapper<EnrollStudentRequest, Student> enrollStudentToStudentMapper)
+            IMapper<Enrollment, EnrollmentResponse> enrollmentToResponseMapper)
         {
             _dbService = dbService;
-            _enrollStudentToStudentMapper = enrollStudentToStudentMapper;
+            _enrollmentToResponseMapper = enrollmentToResponseMapper;
         }
 
         [HttpPost]
@@ -28,7 +29,7 @@ namespace cw3.Controllers
             try
             {
                 var enrollment = _dbService.PromoteStudents(request.Studies, request.Semester);
-                return Created("api/enrollments", enrollment);
+                return Created("api/enrollments", _enrollmentToResponseMapper.Map(enrollment));
             }
             catch (NoSuchStudiesException)
             {
