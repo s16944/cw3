@@ -16,63 +16,36 @@ namespace cw3.DAL
             _dbContext = dbContext;
         }
 
-        public Student GetStudentByIndexNumber(string indexNumber)
-        {
-            var student = _dbContext.Student
+        public Student GetStudentByIndexNumber(string indexNumber) => _dbContext.Student
                 .SingleOrDefault(s => s.IndexNumber == indexNumber);
-            if (student == default) throw new KeyNotFoundException();
-            return student;
-        }
 
-        public IEnumerable<Student> GetStudents() =>
-            _dbContext.Student.ToList();
+        public IEnumerable<Student> GetStudents() => _dbContext.Student.ToList();
 
         public Student AddStudent(Student student)
         {
-            AddStudentInternal(student);
+            _dbContext.Student.Add(student);
             _dbContext.SaveChanges();
             return student;
-        }
-
-        private void AddStudentInternal(Student student)
-        {
-            _dbContext.Student.Add(student);
         }
 
         public Student UpdateStudent(Student student)
         {
-            var dbStudent = UpdateStudentInternal(student);
-
-            _dbContext.SaveChanges();
-
-            return dbStudent;
-        }
-
-        private Student UpdateStudentInternal(Student student)
-        {
-            var dbStudent = _dbContext.Student.SingleOrDefault(s => s.IndexNumber == student.IndexNumber);
-            if (dbStudent == default) throw new KeyNotFoundException();
+            var dbStudent = _dbContext.Student.Single(s => s.IndexNumber == student.IndexNumber);
 
             dbStudent.FirstName = student.FirstName;
             dbStudent.LastName = student.LastName;
             dbStudent.BirthDate = student.BirthDate;
+
+            _dbContext.SaveChanges();
 
             return dbStudent;
         }
 
         public Student RemoveStudent(string indexNumber)
         {
-            var dbStudent = RemoveStudentInternal(indexNumber);
-            _dbContext.SaveChanges();
-            return dbStudent;
-        }
-
-        private Student RemoveStudentInternal(string indexNumber)
-        {
-            var dbStudent = _dbContext.Student.SingleOrDefault(s => s.IndexNumber == indexNumber);
-            if (dbStudent == default) throw new KeyNotFoundException();
-
+            var dbStudent = _dbContext.Student.Single(s => s.IndexNumber == indexNumber);
             _dbContext.Student.Remove(dbStudent);
+            _dbContext.SaveChanges();
             return dbStudent;
         }
 
@@ -87,8 +60,7 @@ namespace cw3.DAL
                 .Where(s => s.IndexNumber == student.IndexNumber)
                 .Include(s => s.StudentRoles)
                 .ThenInclude(sr => sr.Role)
-                .FirstOrDefault();
-            if (dbStudent == default) throw new KeyNotFoundException();
+                .First();
 
             return dbStudent.StudentRoles.Select(sr => sr.Role)
                 .ToList();
@@ -96,19 +68,13 @@ namespace cw3.DAL
 
         public void AddStudentRefreshToken(Student student, string refreshToken, DateTime validity)
         {
-            AddStudentRefreshTokenInternal(student, refreshToken, validity);
-            _dbContext.SaveChanges();
-        }
-
-        private void AddStudentRefreshTokenInternal(Student student, string refreshToken, DateTime validity)
-        {
             var dbStudent = _dbContext.Student
                 .Where(s => s.IndexNumber == student.IndexNumber)
                 .Include(s => s.RefreshTokens)
-                .FirstOrDefault();
-            if (dbStudent == default) throw new KeyNotFoundException();
+                .First();
 
             dbStudent.RefreshTokens.Add(new RefreshTokens {Token = refreshToken, Validity = validity});
+            _dbContext.SaveChanges();
         }
 
         public bool IsRefreshTokenPresent(string refreshToken) =>
@@ -119,46 +85,39 @@ namespace cw3.DAL
             var token = _dbContext.RefreshTokens
                 .Where(r => r.Token == refreshToken)
                 .Include(r => r.IndexNumberNavigation)
-                .FirstOrDefault();
-            if (token == default) throw new KeyNotFoundException();
-
+                .First();
             return token.IndexNumberNavigation;
         }
 
         public void ReplaceRefreshToken(string oldToken, string newToken, DateTime validity)
         {
-            ReplaceRefreshTokenInternal(oldToken, newToken, validity);
-            _dbContext.SaveChanges();
-        }
-
-        private void ReplaceRefreshTokenInternal(string oldToken, string newToken, DateTime validity)
-        {
             var token = _dbContext.RefreshTokens
-                .FirstOrDefault(r => r.Token == oldToken);
-            if (token == default) throw new KeyNotFoundException();
+                .First(r => r.Token == oldToken);
 
             token.Token = newToken;
             token.Validity = validity;
+            
+            _dbContext.SaveChanges();
         }
+        
+        public Studies GetStudiesByName(string name) => _dbContext.Studies.SingleOrDefault(s => s.Name == name);
 
-        public Studies GetStudiesByName(string name)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Enrollment GetEnrollmentByStudiesIdAndSemester(int studiesId, int semester)
-        {
-            throw new NotImplementedException();
-        }
+        public Enrollment GetEnrollmentByStudiesIdAndSemester(int studiesId, int semester) =>
+            _dbContext.Enrollment
+                .SingleOrDefault(e => e.IdStudy == studiesId && e.Semester == semester);
 
         public Enrollment AddEnrollment(Enrollment enrollment)
         {
-            throw new NotImplementedException();
+            _dbContext.Enrollment.Add(enrollment);
+            _dbContext.SaveChanges();
+            return enrollment;
         }
 
         public void EnrollStudent(Student student, Enrollment enrollment)
         {
-            throw new NotImplementedException();
+            student.IdEnrollment = enrollment.IdEnrollment;
+            _dbContext.Student.Add(student);
+            _dbContext.SaveChanges();
         }
 
         public Enrollment PromoteStudents(string studiesName, int semester)
@@ -182,79 +141,6 @@ namespace cw3.DAL
             {
                 Console.WriteLine(exception);
                 return onError.Invoke();
-            }
-        }
-
-        private class TransactionDbService : IDbService
-        {
-            private readonly EfDbService _efDbService;
-
-            public TransactionDbService(EfDbService efDbService)
-            {
-                _efDbService = efDbService;
-            }
-
-            public Student GetStudentByIndexNumber(string indexNumber) =>
-                _efDbService.GetStudentByIndexNumber(indexNumber);
-
-            public IEnumerable<Student> GetStudents() =>
-                _efDbService.GetStudents();
-
-            public Student AddStudent(Student student)
-            {
-                _efDbService.AddStudentInternal(student);
-                return student;
-            }
-
-            public Student UpdateStudent(Student student) =>
-                _efDbService.UpdateStudent(student);
-
-            public Student RemoveStudent(string indexNumber) =>
-                _efDbService.RemoveStudent(indexNumber);
-
-            public IEnumerable<Enrollment> GetStudentEnrollments(string indexNumber)
-            {
-                throw new NotImplementedException();
-            }
-
-            public IEnumerable<Role> GetStudentRoles(Student student) =>
-                _efDbService.GetStudentRoles(student);
-
-            public void AddStudentRefreshToken(Student student, string refreshToken, DateTime validity) =>
-                _efDbService.AddStudentRefreshTokenInternal(student, refreshToken, validity);
-
-            public bool IsRefreshTokenPresent(string refreshToken) =>
-                _efDbService.IsRefreshTokenPresent(refreshToken);
-
-            public Student GetStudentByRefreshToken(string refreshToken) =>
-                _efDbService.GetStudentByRefreshToken(refreshToken);
-
-            public void ReplaceRefreshToken(string oldToken, string newToken, DateTime validity) =>
-                _efDbService.ReplaceRefreshTokenInternal(oldToken, newToken, validity);
-
-            public Studies GetStudiesByName(string name)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Enrollment GetEnrollmentByStudiesIdAndSemester(int studiesId, int semester)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Enrollment AddEnrollment(Enrollment enrollment)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void EnrollStudent(Student student, Enrollment enrollment)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Enrollment PromoteStudents(string studiesName, int semester)
-            {
-                throw new NotImplementedException();
             }
         }
     }

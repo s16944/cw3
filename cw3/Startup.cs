@@ -54,6 +54,7 @@ namespace cw3
             services.AddSingleton<IMapper<EnrollStudentRequest, Student>, EnrollStudentToStudentMapper>();
 
             services.AddScoped<IMapper<Student, StudentResponse>, StudentToResponseMapper>();
+            services.AddScoped<IMapper<Enrollment, EnrollmentResponse>, EnrollmentToResponseMapper>();
             services.AddScoped<IDbService, EfDbService>();
             services.AddScoped<ITransactionalDbService, EfDbService>();
             services.AddDbContext<StudiesDbContext>();
