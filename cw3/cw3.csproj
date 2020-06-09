@@ -5,7 +5,6 @@
     <UserSecretsId>c44dcc12-76b8-496b-b8ae-b43200cf0689</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
-    <Folder Include="DTOs\Response" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
   <ItemGroup>
