@@ -2,6 +2,7 @@
 using cw3.DAL;
 using cw3.DAL.Parsers;
 using cw3.DTOs.Requests;
+using cw3.DTOs.Response;
 using cw3.Mappers;
 using cw3.Middlewares;
 using cw3.Models;
@@ -9,7 +10,6 @@ using cw3.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -53,9 +53,10 @@ namespace cw3
 
             services.AddSingleton<IMapper<EnrollStudentRequest, Student>, EnrollStudentToStudentMapper>();
 
+            services.AddScoped<IMapper<Student, StudentResponse>, StudentToResponseMapper>();
             services.AddScoped<IDbService, EfDbService>();
+            services.AddScoped<ITransactionalDbService, EfDbService>();
             services.AddDbContext<StudiesDbContext>();
-            services.AddSingleton<ITransactionalDbService, MsSqlDbService>();
 
             services.AddSwaggerGen(config =>
                 config.SwaggerDoc("v1", new OpenApiInfo {Title = "Students App API", Version = "v1"}));

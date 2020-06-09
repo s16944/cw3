@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using cw3.DAL;
+using cw3.DTOs.Response;
+using cw3.Mappers;
 using cw3.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,16 +14,20 @@ namespace cw3.Controllers
     public class StudentsController : ControllerBase
     {
         private readonly IDbService _dbService;
+        private readonly IMapper<Student, StudentResponse> _studentMapper;
 
-        public StudentsController(IDbService dbService)
+        public StudentsController(IDbService dbService, IMapper<Student, StudentResponse> studentMapper)
         {
             _dbService = dbService;
+            _studentMapper = studentMapper;
         }
 
         [HttpGet]
         public IActionResult GetStudent()
         {
-            return Ok(_dbService.GetStudents());
+            var students = _dbService.GetStudents();
+            var response = students.Select(s => _studentMapper.Map(s));
+            return Ok(response);
         }
 
         [HttpGet("{index}/enrollments")]
@@ -35,7 +42,8 @@ namespace cw3.Controllers
             try
             {
                 var student = _dbService.GetStudentByIndexNumber(index);
-                return Ok(student);
+                var response = _studentMapper.Map(student);
+                return Ok(response);
             }
             catch (KeyNotFoundException)
             {
